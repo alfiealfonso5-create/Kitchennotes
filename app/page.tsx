@@ -1,6 +1,8 @@
 import Link from "next/link";
 import SearchBox from "./SearchBox";
 import { searchMeals } from "./lib/mealdb";
+import ThemeToggle from "./components/ThemeToggle";
+
 
 export default async function Home({
   searchParams,
@@ -13,13 +15,23 @@ export default async function Home({
 
   return (
     <main style={{ padding: 24, fontFamily: "system-ui" }}>
+      <div
+      style={{
+           display: "flex",
+           justifyContent: "flex-end",
+           marginBottom: 12,
+          }}
+       >
+      <ThemeToggle />
+      </div>
+
       <h1 style={{ fontSize: 28, marginBottom: 12 }}>Meal Finder</h1>
 
       <SearchBox initialValue={ingredient} />
 
       {!ingredient ? (
         <p>Type an ingredient and hit Search.</p>
-      ) : meals.length === 0 ? (
+                 ) : meals.length === 0 ? (
         <p>No meals found for “{ingredient}”.</p>
       ) : (
         <>

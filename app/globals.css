@@ -1,10 +1,45 @@
+@config "../tailwind.config.js";
 @import "tailwindcss";
 
+/* 1️⃣ Light mode default */
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
 
+/* 2️⃣ System preference (only if user did NOT toggle) */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+/* Only apply system dark if user has NOT chosen a manual theme */
+@media (prefers-color-scheme: dark) {
+  :root:not(.dark):not(.light) {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+/* Manual overrides (your toggle controls these) */
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+.light {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+
+/* 3️⃣ Manual dark mode (toggle WINS) */
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+/* Tailwind theme mapping (keep this) */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -12,13 +47,7 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* 4️⃣ Body uses variables */
 body {
   background: var(--background);
   color: var(--foreground);
