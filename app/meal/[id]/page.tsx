@@ -1,6 +1,5 @@
 import ServingsClient from "./ServingsClient";
-
-
+import type { Metadata } from "next";
 
 type AnyMeal = Record<string, any>;
 
@@ -50,7 +49,6 @@ async function getMealByIdStrict(id: string) {
     if (isRealMeal(first)) return { meal: first, debug: null };
   }
 
-  // No valid meal object found — return debug info
   return {
     meal: null,
     debug: {
@@ -79,6 +77,67 @@ async function getMealByIdStrict(id: string) {
   };
 }
 
+export async function generateMetadata(
+  { params }: { params: Promise<{ id: string }> }
+): Promise<Metadata> {
+  const { id } = await params;
+
+  const { meal } = await getMealByIdStrict(id);
+
+  const siteUrl = "https://kitchennotes.org";
+  const canonicalUrl = `${siteUrl}/meal/${id}`;
+
+  if (!meal) {
+    return {
+      title: "Recipe not found — KitchenNotes",
+      description: "This recipe could not be found.",
+      alternates: { canonical: canonicalUrl },
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const title = `${meal.strMeal} — KitchenNotes`;
+
+  const raw =
+    typeof meal.strInstructions === "string"
+      ? meal.strInstructions
+      : "Step-by-step recipe with ingredients and shopping list.";
+
+  const cleaned = raw
+    .replace(/\r\n/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\b\d+\s*[\.\)]\s*/g, "")
+    .trim();
+
+  const description =
+    cleaned.length > 0
+      ? cleaned.slice(0, 155)
+      : "Step-by-step recipe with ingredients and shopping list.";
+
+  const imageUrl = meal.strMealThumb || undefined;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: canonicalUrl },
+
+    openGraph: {
+      type: "article",
+      title,
+      description,
+      url: canonicalUrl,
+      images: imageUrl ? [{ url: imageUrl }] : [],
+    },
+
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: imageUrl ? [imageUrl] : [],
+    },
+  };
+}
+
 export default async function MealPage({
   params,
 }: {
@@ -86,13 +145,11 @@ export default async function MealPage({
 }) {
   const p = await params;
 
-
   if (!p?.id) {
-  return <main style={{ padding: 24 }}>Missing meal id</main>;
-}
+    return <main style={{ padding: 24 }}>Missing meal id</main>;
+  }
 
   const { meal, debug } = await getMealByIdStrict(p.id);
-
 
   if (!meal) {
     return (
@@ -118,15 +175,13 @@ export default async function MealPage({
         <p style={{ marginTop: 12 }}>
           Quick test: open this in your browser and see if it shows JSON:
           <br />
-          <code>
-            https://www.themealdb.com/api/json/v1/1/lookup.php?i={p.id}
-
-          </code>
+          <code>https://www.themealdb.com/api/json/v1/1/lookup.php?i={p.id}</code>
         </p>
       </main>
     );
   }
 
+  // Ingredients
   const ingredients: { ingredient: string; measure: string }[] = [];
   for (let i = 1; i <= 20; i++) {
     const ing = meal[`strIngredient${i}`];
@@ -137,18 +192,46 @@ export default async function MealPage({
 
     if (ingredient) ingredients.push({ ingredient, measure });
   }
-const raw = typeof meal.strInstructions === "string" ? meal.strInstructions : "";
 
-const steps: string[] = raw
-  .replace(/\r\n/g, "\n")
-  .split(/\n+|\s+(?=\d+\.)/g)
-  .map((s) => s.replace(/^\d+\.\s*/, "").trim())
-  .filter((s) => s.length > 0);
+  // Steps
+  const raw = typeof meal.strInstructions === "string" ? meal.strInstructions : "";
+  const steps: string[] = raw
+    .replace(/\r\n/g, "\n")
+    .split(/\n+|\s+(?=\d+\.)/g)
+    .map((s) => s.replace(/^\d+\.\s*/, "").trim())
+    .filter((s) => s.length > 0);
 
+  // JSON-LD (ONLY in success path)
+  const siteUrl = "https://kitchennotes.org";
+  const canonicalUrl = `${siteUrl}/meal/${p.id}`;
 
+  const recipeJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Recipe",
+    name: meal.strMeal,
+    image: meal.strMealThumb ? [meal.strMealThumb] : undefined,
+    url: canonicalUrl,
+    description:
+      typeof meal.strInstructions === "string"
+        ? meal.strInstructions.replace(/\s+/g, " ").slice(0, 155)
+        : "Step-by-step recipe with ingredients and shopping list.",
+    recipeIngredient: ingredients.map((x) =>
+      x.measure ? `${x.measure} ${x.ingredient}` : x.ingredient
+    ),
+    recipeInstructions: steps.map((text: string, i: number) => ({
+      "@type": "HowToStep",
+      position: i + 1,
+      text,
+    })),
+  };
 
   return (
     <main style={{ padding: 24, maxWidth: 900, margin: "0 auto" }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(recipeJsonLd) }}
+      />
+
       <h1 style={{ fontSize: 32, marginBottom: 12 }}>{meal.strMeal}</h1>
 
       {meal.strMealThumb && (
@@ -161,24 +244,21 @@ const steps: string[] = raw
 
       <h2>Ingredients</h2>
 
-{ingredients.length === 0 ? (
-  <p>No ingredients found.</p>
-) : (
-  <ServingsClient ingredients={ingredients} />
-)}
-
+      {ingredients.length === 0 ? (
+        <p>No ingredients found.</p>
+      ) : (
+        <ServingsClient ingredients={ingredients} />
+      )}
 
       <h2 style={{ marginTop: 18 }}>Instructions</h2>
 
-<ol style={{ paddingLeft: 20, listStyleType: "decimal" }}>
-  {steps.map((step, idx) => (
-    <li key={idx} style={{ marginBottom: 8 }}>
-      {step.endsWith(".") ? step : `${step}.`}
-    </li>
-  ))}
-</ol>
-
-
+      <ol style={{ paddingLeft: 20, listStyleType: "decimal" }}>
+        {steps.map((step, idx) => (
+          <li key={idx} style={{ marginBottom: 8 }}>
+            {step.endsWith(".") ? step : `${step}.`}
+          </li>
+        ))}
+      </ol>
     </main>
   );
 }

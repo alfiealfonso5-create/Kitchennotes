@@ -25,7 +25,16 @@ export default async function Home({
       <ThemeToggle />
       </div>
 
-      <h1 style={{ fontSize: 28, marginBottom: 12 }}>Meal Finder</h1>
+        <h1 style={{ fontSize: 32, marginBottom: 8 }}>KitchenNotes</h1>
+           <p style={{ marginTop: 0, opacity: 0.8 }}>
+                  Simple recipe notes. Search, cook, repeat.
+           </p>
+
+           <p style={{ marginTop: 10, fontSize: 14, opacity: 0.6 }}>
+                Powered by TheMealDB
+           </p>
+
+
 
       <SearchBox initialValue={ingredient} />
 
