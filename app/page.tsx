@@ -2,6 +2,7 @@ import Link from "next/link";
 import SearchBox from "./SearchBox";
 import { searchMeals } from "./lib/mealdb";
 import ThemeToggle from "./components/ThemeToggle";
+import Image from "next/image";
 
 
 export default async function Home({
@@ -73,15 +74,20 @@ export default async function Home({
         style={{ textDecoration: "none", color: "inherit" }}
       >
         {m.strMealThumb && (
-          <img
+          <Image
             src={m.strMealThumb}
             alt={m.strMeal}
+            width={300}
+            height={300}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 300px"
             style={{
-              width: "100%",
-              borderRadius: 12,
-              marginBottom: 10,
-            }}
-          />
+            width: "100%",
+            height: "auto",
+            borderRadius: 12,
+            marginBottom: 10,
+     }}
+/>
+
         )}
 
         <div style={{ fontWeight: 600 }}>{m.strMeal}</div>

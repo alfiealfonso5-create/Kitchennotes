@@ -1,5 +1,7 @@
-import ServingsClient from "./ServingsClient";
 import type { Metadata } from "next";
+import Image from "next/image";
+import ServingsClient from "./ServingsClient";
+import styles from "./RecipePaper.module.css";
 
 type AnyMeal = Record<string, any>;
 
@@ -77,9 +79,11 @@ async function getMealByIdStrict(id: string) {
   };
 }
 
-export async function generateMetadata(
-  { params }: { params: Promise<{ id: string }> }
-): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
   const { id } = await params;
 
   const { meal } = await getMealByIdStrict(id);
@@ -120,7 +124,6 @@ export async function generateMetadata(
     title,
     description,
     alternates: { canonical: canonicalUrl },
-
     openGraph: {
       type: "article",
       title,
@@ -128,7 +131,6 @@ export async function generateMetadata(
       url: canonicalUrl,
       images: imageUrl ? [{ url: imageUrl }] : [],
     },
-
     twitter: {
       card: "summary_large_image",
       title,
@@ -155,28 +157,7 @@ export default async function MealPage({
     return (
       <main style={{ padding: 24, maxWidth: 900, margin: "0 auto" }}>
         <h1 style={{ fontSize: 24, marginBottom: 12 }}>Recipe details error</h1>
-        <p>
-          I didn&apos;t receive a valid meal object from TheMealDB (it should have
-          <code> strMeal</code> and <code>strInstructions</code>).
-        </p>
-
-        <pre
-          style={{
-            whiteSpace: "pre-wrap",
-            padding: 12,
-            borderRadius: 12,
-            border: "1px solid #eee",
-            overflowX: "auto",
-          }}
-        >
-          {JSON.stringify(debug, null, 2)}
-        </pre>
-
-        <p style={{ marginTop: 12 }}>
-          Quick test: open this in your browser and see if it shows JSON:
-          <br />
-          <code>https://www.themealdb.com/api/json/v1/1/lookup.php?i={p.id}</code>
-        </p>
+        <pre style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(debug, null, 2)}</pre>
       </main>
     );
   }
@@ -201,7 +182,7 @@ export default async function MealPage({
     .map((s) => s.replace(/^\d+\.\s*/, "").trim())
     .filter((s) => s.length > 0);
 
-  // JSON-LD (ONLY in success path)
+  // JSON-LD
   const siteUrl = "https://kitchennotes.org";
   const canonicalUrl = `${siteUrl}/meal/${p.id}`;
 
@@ -227,38 +208,41 @@ export default async function MealPage({
 
   return (
     <main style={{ padding: 24, maxWidth: 900, margin: "0 auto" }}>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(recipeJsonLd) }}
-      />
+      <section className={styles.paper}>
+        <div className={styles.inner}>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(recipeJsonLd) }}
+          />
 
-      <h1 style={{ fontSize: 32, marginBottom: 12 }}>{meal.strMeal}</h1>
+          <h1 className={styles.title}>{meal.strMeal}</h1>
 
-      {meal.strMealThumb && (
-        <img
-          src={meal.strMealThumb}
-          alt={meal.strMeal}
-          style={{ width: 360, borderRadius: 14, marginBottom: 16 }}
-        />
-      )}
+          {meal.strMealThumb && (
+            <Image
+              src={meal.strMealThumb}
+              alt={meal.strMeal}
+              width={860}
+              height={520}
+              sizes="(max-width: 900px) 100vw, 860px"
+              style={{ width: "100%", height: "auto", borderRadius: 14, marginBottom: 16 }}
+            />
+          )}
 
-      <h2>Ingredients</h2>
+          <h2 className={styles.sectionTitle}>Ingredients</h2>
+          {ingredients.length === 0 ? (
+            <p>No ingredients found.</p>
+          ) : (
+            <ServingsClient ingredients={ingredients} />
+          )}
 
-      {ingredients.length === 0 ? (
-        <p>No ingredients found.</p>
-      ) : (
-        <ServingsClient ingredients={ingredients} />
-      )}
-
-      <h2 style={{ marginTop: 18 }}>Instructions</h2>
-
-      <ol style={{ paddingLeft: 20, listStyleType: "decimal" }}>
-        {steps.map((step, idx) => (
-          <li key={idx} style={{ marginBottom: 8 }}>
-            {step.endsWith(".") ? step : `${step}.`}
-          </li>
-        ))}
-      </ol>
+          <h2 className={styles.sectionTitle}>Instructions</h2>
+          <ol className={styles.instructionsList}>
+            {steps.map((step, idx) => (
+              <li key={idx}>{step.endsWith(".") ? step : `${step}.`}</li>
+            ))}
+          </ol>
+        </div>
+      </section>
     </main>
   );
 }

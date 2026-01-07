@@ -1,0 +1,201 @@
+.paper {
+  /* notebook rhythm */
+  --line: 28px;
+  --rule: rgba(0, 0, 0, 0.09);
+  --margin: rgba(0, 0, 0, 0.12);
+
+  background: #fff6c9;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+
+  /* ruled lines behind everything */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--rule),
+    var(--rule) 1px,
+    transparent 1px,
+    transparent var(--line)
+  );
+}
+
+/* left margin line */
+.paper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 22px;
+  width: 2px;
+  background: var(--margin);
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* all content above background + margin */
+.inner {
+  position: relative;
+  z-index: 1;
+  padding-left: 18px;
+}
+
+/* Titles should follow the same notebook rhythm */
+.title {
+  margin: 0 0 12px 0;
+  line-height: var(--line);
+  font-size: 32px;
+}
+
+.sectionTitle {
+  margin: 16px 0 10px 0;
+  line-height: var(--line);
+}
+
+/* Lists: force consistent rhythm so text sits cleanly */
+.ruledList {
+  margin: 8px 0 0 0;
+  padding-left: 22px;
+  line-height: var(--line);
+}
+
+.instructionsList {
+  margin: 8px 0 0 0;
+  padding-left: 26px;
+  line-height: var(--line);
+}
+
+/* -------- Torn note card (shopping list) -------- */
+
+.noteCard {
+  position: relative;
+  margin-top: 18px;
+
+  /* IMPORTANT: transparent so notebook lines show through & align */
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  border-radius: 14px;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.10);
+  overflow: hidden;
+}
+
+/* REMOVE the torn-edge scallops that caused the ~~~~~ look */
+.noteCard::before {
+  content: "";
+  display: none;
+}
+
+/* --- Tape effect --- */
+.tape {
+  position: absolute;
+  top: -12px;
+  left: 18px;
+  width: 140px;
+  height: 34px;
+  background: rgba(255, 245, 180, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.10);
+  transform: rotate(-6deg);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.tape::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(0, 0, 0, 0.06),
+    rgba(0, 0, 0, 0.06) 2px,
+    transparent 2px,
+    transparent 6px
+  );
+  opacity: 0.18;
+}
+
+.tape2 {
+  position: absolute;
+  top: -10px;
+  right: 22px;
+  width: 90px;
+  height: 28px;
+  background: rgba(255, 245, 180, 0.78);
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+  transform: rotate(8deg);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.noteInner {
+  position: relative;
+  padding: 16px;
+  z-index: 1;
+}
+
+.noteHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.noteTitle {
+  margin: 0;
+  line-height: var(--line);
+  font-size: 18px;
+}
+
+.copyBtn {
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  background: #fff;
+  color: #111;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.copyBtnSuccess {
+  border-color: rgba(0, 128, 0, 0.35);
+  color: #0a7a2a;
+}
+
+/* Dark mode */
+:global(html.dark) .paper {
+  --rule: rgba(255, 255, 255, 0.12); /* slightly stronger */
+  --margin: rgba(255, 255, 255, 0.18);
+
+  background-color: #16140b;
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+:global(html.dark) .noteCard {
+  /* transparent so paper lines show through */
+  background: rgba(0, 0, 0, 0.30);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.45);
+}
+
+:global(html.dark) .tape,
+:global(html.dark) .tape2 {
+  background: rgba(255, 235, 150, 0.14);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+:global(html.dark) .copyBtn {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f2f2f2;
+  border-color: rgba(255, 255, 255, 0.18);
+}
